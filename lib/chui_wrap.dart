@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:wrap/wrap_render_flex.dart';
+import 'package:wrap/chui_wrap_render.dart';
 
 /// A widget that displays its children in multiple horizontal or vertical runs.
 ///
-/// A [WrapFlex] lays out each child and attempts to place the child adjacent to the
+/// A [ChuiWrap] lays out each child and attempts to place the child adjacent to the
 /// previous child in the main axis, given by [direction], leaving [spacing]
-/// space in between. If there is not enough space to fit the child, [WrapFlex]
+/// space in between. If there is not enough space to fit the child, [ChuiWrap]
 /// creates a new _run_ adjacent to the existing children in the cross axis.
 ///
 /// After all the children have been allocated to runs, the children within the
@@ -20,7 +20,7 @@ import 'package:wrap/wrap_render_flex.dart';
 ///
 /// {@tool snippet}
 ///
-/// This example renders some [Chip]s representing four contacts in a [WrapFlex] so
+/// This example renders some [Chip]s representing four contacts in a [ChuiWrap] so
 /// that they flow across lines as necessary.
 ///
 /// ```dart
@@ -54,7 +54,7 @@ import 'package:wrap/wrap_render_flex.dart';
 ///  * [Row], which places children in one line, and gives control over their
 ///    alignment and spacing.
 ///  * The [catalog of layout widgets](https://flutter.dev/widgets/layout/).
-class WrapFlex extends MultiChildRenderObjectWidget {
+class ChuiWrap extends MultiChildRenderObjectWidget {
   /// Creates a wrap layout.
   ///
   /// By default, the wrap layout is horizontal and both the children and the
@@ -66,11 +66,12 @@ class WrapFlex extends MultiChildRenderObjectWidget {
   /// disambiguate `start` or `end` values for the main or cross axis
   /// directions, the [textDirection] must not be null.
 
+  // TODO FIOR DETALHAR ESSES caras
   final int maxLines;
-
   final Widget? overflowWidget;
+  final void Function(int)? countOverflowedWidgets;
 
-  WrapFlex({
+  ChuiWrap({
     Key? key,
     this.direction = Axis.horizontal,
     this.alignment = WrapAlignment.start,
@@ -83,6 +84,7 @@ class WrapFlex extends MultiChildRenderObjectWidget {
     this.clipBehavior = Clip.none,
     this.maxLines = 1,
     this.overflowWidget,
+    this.countOverflowedWidgets,
     List<Widget> children = const <Widget>[],
   })  : assert(maxLines >= 1),
         super(key: key, children: [
@@ -129,7 +131,7 @@ class WrapFlex extends MultiChildRenderObjectWidget {
   /// How the runs themselves should be placed in the cross axis.
   ///
   /// For example, if [runAlignment] is [WrapAlignment.center], the runs are
-  /// grouped together in the center of the overall [WrapFlex] in the cross axis.
+  /// grouped together in the center of the overall [ChuiWrap] in the cross axis.
   ///
   /// Defaults to [WrapAlignment.start].
   ///
@@ -146,7 +148,7 @@ class WrapFlex extends MultiChildRenderObjectWidget {
   /// For example, if [runSpacing] is 10.0, the runs will be spaced at least
   /// 10.0 logical pixels apart in the cross axis.
   ///
-  /// If there is additional free space in the overall [WrapFlex] (e.g., because
+  /// If there is additional free space in the overall [ChuiWrap] (e.g., because
   /// the wrap has a minimum size that is not filled), the additional free space
   /// will be allocated according to the [runAlignment].
   ///
@@ -228,23 +230,25 @@ class WrapFlex extends MultiChildRenderObjectWidget {
   final Clip clipBehavior;
 
   @override
-  RenderWrapFlex createRenderObject(BuildContext context) {
-    return RenderWrapFlex(
-        direction: direction,
-        alignment: alignment,
-        spacing: spacing,
-        runAlignment: runAlignment,
-        runSpacing: runSpacing,
-        crossAxisAlignment: crossAxisAlignment,
-        textDirection: textDirection ?? Directionality.maybeOf(context),
-        verticalDirection: verticalDirection,
-        clipBehavior: clipBehavior,
-        maxLines: maxLines,
-        hasOverflow: (overflowWidget != null));
+  ChuiRenderWrap createRenderObject(BuildContext context) {
+    return ChuiRenderWrap(
+      direction: direction,
+      alignment: alignment,
+      spacing: spacing,
+      runAlignment: runAlignment,
+      runSpacing: runSpacing,
+      crossAxisAlignment: crossAxisAlignment,
+      textDirection: textDirection ?? Directionality.maybeOf(context),
+      verticalDirection: verticalDirection,
+      clipBehavior: clipBehavior,
+      maxLines: maxLines,
+      hasOverflowWidget: (overflowWidget != null),
+      countOverflowedWidgets: countOverflowedWidgets,
+    );
   }
 
   @override
-  void updateRenderObject(BuildContext context, RenderWrapFlex renderObject) {
+  void updateRenderObject(BuildContext context, ChuiRenderWrap renderObject) {
     renderObject
       ..direction = direction
       ..alignment = alignment
@@ -256,7 +260,8 @@ class WrapFlex extends MultiChildRenderObjectWidget {
       ..verticalDirection = verticalDirection
       ..clipBehavior = clipBehavior
       ..maxLines = maxLines
-      ..hasOverflow = (overflowWidget != null);
+      ..hasOverflowWidget = (overflowWidget != null);
+    //..countOverflowedWidgets = countOverflowedWidgets;
   }
 
   @override
